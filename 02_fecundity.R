@@ -1,7 +1,6 @@
 ########## Fecundity analyzes ########## 
 ########################################
 
-setwd("C:/Users/sibazin/Desktop/Simon/phd/chapitre_2/article/data")
 #--------------------------------------------------
 
 # This script analyzes fish fecundity
