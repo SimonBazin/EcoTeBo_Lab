@@ -1,0 +1,45 @@
+model {
+  # prior
+  for (j in 1:4) {
+    K[j] ~ dnorm(0, 0.001)T(0,)
+    Linf[j] ~ dnorm(0, 0.001)T(0,)
+    t0[j] ~ dnorm(0, 0.001) 
+  }
+  tau ~ dunif(0, 5)
+  st ~ dunif(0, 20)
+  sL ~ dunif(0, 5)
+  sK ~ dunif(0, 1) # peut-être pas bon 1e7
+  rho1 ~ dunif(-1, 0)
+  rho2 ~ dunif(0, 1)
+  rho3 ~  dunif(-1, 0)
+  # rho1 K L
+  # rho2 K t
+  # rho3 L t
+ 
+  VCOV[1,1] <- sK^2
+  VCOV[2,2] <- sL^2
+  VCOV[3,3] <- st^2
+  VCOV[1,2] <- rho1*sK*sL
+  VCOV[2,1] <- VCOV[1,2]
+  VCOV[1,3] <- rho2*sK*st
+  VCOV[3,1] <- VCOV[1,3]
+  VCOV[2,3] <- rho3*sL*st 
+  VCOV[3,2] <- VCOV[2,3]
+
+  mu0 <- c(0, 0, 0)
+ 
+  for (g in 1:11) {
+    eps[g, 1:3] ~ dmnorm.vcov(mu0, VCOV)
+    ek[g] <- eps[g,1]
+    eL[g] <- eps[g,2]
+    et[g] <- eps[g,3]
+    Kb[Ci[g]] <- K[gr[g]] + ek[g]
+    Linfb[Ci[g]] <- Linf[gr[g]] + eL[g]
+    t0b[Ci[g]] <- t0[gr[g]] + et[g]
+  } 
+  # likelihood
+  for (i in 1:N) {
+    mu[i] <- Linfb[C[i]]*(1-exp((-1*Kb[C[i]])*(age[i]-t0b[C[i]])))
+    l[i] ~ dnorm(mu[i], tau)
+  }
+}
